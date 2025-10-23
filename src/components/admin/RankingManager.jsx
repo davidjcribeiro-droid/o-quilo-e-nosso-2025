@@ -38,8 +38,8 @@ const RankingManager = () => {
   const loadData = async () => {
     setLoading(true)
     try {
-      const pratosData = adminDataService.getPratos()
-      const juradosData = adminDataService.getJurados()
+      const pratosData = await adminDataService.getPratos()
+      const juradosData = await adminDataService.getJurados()
       
       setPratos(pratosData)
       setJurados(juradosData)
