@@ -70,13 +70,16 @@ const AdminPanel = () => {
     setActiveTab('dashboard')
   }
 
-  const loadStats = () => {
+  const loadStats = async () => {
     setLoading(true)
     try {
-      const statistics = adminDataService.getEstatisticas()
-      setStats(statistics)
+      console.log('📊 Carregando estatísticas...')
+      const statistics = await adminDataService.getEstatisticas()
+      console.log('✅ Estatísticas carregadas:', statistics)
+      setStats(statistics || {})
     } catch (error) {
-      console.error('Erro ao carregar estatísticas:', error)
+      console.error('❌ Erro ao carregar estatísticas:', error)
+      setStats({})
     } finally {
       setLoading(false)
     }

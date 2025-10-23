@@ -75,13 +75,26 @@ const PratosManager = ({ onDataChange }) => {
     filterPratos()
   }, [pratos, searchTerm, categoryFilter])
 
-  const loadPratos = () => {
+  const loadPratos = async () => {
     try {
-      const pratosData = adminDataService.getPratos()
-      setPratos(pratosData)
+      console.log('🍽️ Carregando pratos no admin...')
+      const pratosData = await adminDataService.getPratos()
+      console.log('✅ Pratos carregados no admin:', pratosData)
+      
+      // Garantir que pratosData é um array
+      if (Array.isArray(pratosData)) {
+        setPratos(pratosData)
+        setFilteredPratos(pratosData)
+      } else {
+        console.warn('⚠️ Dados não são array:', pratosData)
+        setPratos([])
+        setFilteredPratos([])
+      }
     } catch (error) {
       setError('Erro ao carregar pratos')
-      console.error(error)
+      console.error('❌ Erro ao carregar pratos:', error)
+      setPratos([])
+      setFilteredPratos([])
     }
   }
 
