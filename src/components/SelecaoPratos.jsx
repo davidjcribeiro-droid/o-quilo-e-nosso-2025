@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card.jsx'
 import { Badge } from '@/components/ui/badge.jsx'
 import { ArrowLeft, ArrowRight, Clock, Users, CheckCircle, Lock, Trophy, Star, User, CheckCircle2, Clock4 } from 'lucide-react'
 import adminDataService from '../services/AdminDataService.js'
+import VotingDataService from '../services/VotingDataService.js'
 
 const SelecaoPratos = ({ dadosJurado, onNext, onBack, onAvaliarPrato }) => {
   const [pratos, setPratos] = useState([])
@@ -70,22 +71,28 @@ const SelecaoPratos = ({ dadosJurado, onNext, onBack, onAvaliarPrato }) => {
     }
   ])
 
-  // Carregar pratos do painel administrativo
+  // Carregar pratos do Supabase via VotingDataService
   useEffect(() => {
-    try {
-      const pratosAdmin = adminDataService.getPratos()
-      if (pratosAdmin && pratosAdmin.length > 0) {
-        // Usar dados do painel administrativo
-        setPratos(pratosAdmin)
-      } else {
-        // Fallback para dados originais se não houver dados no admin
+    const carregarPratos = async () => {
+      try {
+        console.log('🍽️ Carregando pratos para votação...')
+        const pratosVoting = await VotingDataService.getPratos()
+        
+        if (pratosVoting && pratosVoting.length > 0) {
+          console.log('✅ Pratos carregados do sistema:', pratosVoting.length)
+          setPratos(pratosVoting)
+        } else {
+          console.log('⚠️ Nenhum prato encontrado, usando dados padrão')
+          setPratos(pratosOriginal)
+        }
+      } catch (error) {
+        console.error('❌ Erro ao carregar pratos:', error)
+        // Fallback para dados originais em caso de erro
         setPratos(pratosOriginal)
       }
-    } catch (error) {
-      console.error('Erro ao carregar pratos do admin:', error)
-      // Usar dados originais em caso de erro
-      setPratos(pratosOriginal)
     }
+    
+    carregarPratos()
   }, [])
 
   const criterios = [

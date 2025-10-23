@@ -1,12 +1,15 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button.jsx'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.jsx'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select.jsx'
 import { User } from 'lucide-react'
+import VotingDataService from '../services/VotingDataService.js'
 
 const IdentificacaoJurado = ({ onNext }) => {
   const [juradoSelecionado, setJuradoSelecionado] = useState('')
   const [errors, setErrors] = useState({})
+  const [jurados, setJurados] = useState([])
+  const [loading, setLoading] = useState(true)
 
   const juradosFixos = [
     { id: 1, nome: 'Ana Paula' },
@@ -15,6 +18,31 @@ const IdentificacaoJurado = ({ onNext }) => {
     { id: 4, nome: 'Diego Rocha' },
     { id: 5, nome: 'Fernanda Alves' }
   ]
+
+  // Carregar jurados do Supabase
+  useEffect(() => {
+    const carregarJurados = async () => {
+      try {
+        console.log('👥 Carregando jurados do sistema...')
+        const juradosVoting = await VotingDataService.getJurados()
+        
+        if (juradosVoting && juradosVoting.length > 0) {
+          console.log('✅ Jurados carregados:', juradosVoting.length)
+          setJurados(juradosVoting)
+        } else {
+          console.log('⚠️ Usando jurados padrão')
+          setJurados(juradosFixos)
+        }
+      } catch (error) {
+        console.error('❌ Erro ao carregar jurados:', error)
+        setJurados(juradosFixos)
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    carregarJurados()
+  }, [])
 
   const handleJuradoChange = (value) => {
     setJuradoSelecionado(value)
@@ -42,7 +70,7 @@ const IdentificacaoJurado = ({ onNext }) => {
     }
 
     // Encontrar dados completos do jurado
-    const juradoCompleto = juradosFixos.find(j => j.nome === juradoSelecionado)
+    const juradoCompleto = jurados.find(j => j.nome === juradoSelecionado)
     
     const dadosJurado = {
       id: juradoCompleto.id,
@@ -95,7 +123,7 @@ const IdentificacaoJurado = ({ onNext }) => {
                       <SelectValue placeholder="Escolha seu nome da lista" />
                     </SelectTrigger>
                     <SelectContent>
-                      {juradosFixos.map((jurado) => (
+                      {jurados.map((jurado) => (
                         <SelectItem key={jurado.id} value={jurado.nome}>
                           {jurado.nome}
                         </SelectItem>

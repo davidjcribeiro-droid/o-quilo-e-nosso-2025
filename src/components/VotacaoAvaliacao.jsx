@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button.jsx'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.jsx'
 import { Badge } from '@/components/ui/badge.jsx'
 import { ArrowLeft, Star, Send, ChevronDown, ChevronUp, CheckCircle } from 'lucide-react'
+import VotingDataService from '../services/VotingDataService.js'
 
 const VotacaoAvaliacao = ({ dadosJurado, pratoSelecionado, onNext, onBack }) => {
   const [avaliacao, setAvaliacao] = useState({
@@ -178,7 +179,7 @@ const VotacaoAvaliacao = ({ dadosJurado, pratoSelecionado, onNext, onBack }) => 
     )
   }
 
-  const handleEnviarCriterio = (criterio) => {
+  const handleEnviarCriterio = async (criterio) => {
     if (avaliacao[criterio.key] === 0) {
       alert('Por favor, selecione uma nota antes de enviar.')
       return
@@ -228,28 +229,44 @@ const VotacaoAvaliacao = ({ dadosJurado, pratoSelecionado, onNext, onBack }) => 
 
     // Salvar também no sistema geral se estiver completo
     if (todosPreenchidos) {
-      const avaliacoesGerais = localStorage.getItem('avaliacoes') || '[]'
-      const avaliacoes = JSON.parse(avaliacoesGerais)
-      
-      // Verificar se já existe uma avaliação deste jurado para este prato
-      const indexExistente = avaliacoes.findIndex(
-        av => av.jurado.id === dadosJurado.id && av.prato.id === pratoSelecionado.id
-      )
-
       const avaliacaoCompleta = {
         ...votacoes[pratoSelecionado.id],
-        dataAvaliacao: votacoes[pratoSelecionado.id].dataCompleta
+        dataAvaliacao: votacoes[pratoSelecionado.id].dataCompleta,
+        pratoId: pratoSelecionado.id,
+        juradoId: dadosJurado.id,
+        criterios: votacoes[pratoSelecionado.id].criterios
       }
 
-      if (indexExistente >= 0) {
-        avaliacoes[indexExistente] = avaliacaoCompleta
-      } else {
-        avaliacoes.push(avaliacaoCompleta)
-      }
+      // Salvar no Supabase + localStorage via VotingDataService
+      try {
+        const resultado = await VotingDataService.addAvaliacao(avaliacaoCompleta)
+        console.log('✅ Avaliação salva:', resultado)
+        
+        if (resultado.savedToSupabase) {
+          alert('🎉 Prato completamente avaliado e salvo no sistema! Dados sincronizados em tempo real.')
+        } else {
+          alert('✅ Prato avaliado e salvo localmente! Será sincronizado quando a conexão estiver disponível.')
+        }
+      } catch (error) {
+        console.error('❌ Erro ao salvar avaliação:', error)
+        
+        // Fallback para localStorage tradicional
+        const avaliacoesGerais = localStorage.getItem('avaliacoes') || '[]'
+        const avaliacoes = JSON.parse(avaliacoesGerais)
+        
+        const indexExistente = avaliacoes.findIndex(
+          av => av.jurado.id === dadosJurado.id && av.prato.id === pratoSelecionado.id
+        )
 
-      localStorage.setItem('avaliacoes', JSON.stringify(avaliacoes))
-      
-      alert('Prato completamente avaliado! Todos os critérios foram enviados.')
+        if (indexExistente >= 0) {
+          avaliacoes[indexExistente] = avaliacaoCompleta
+        } else {
+          avaliacoes.push(avaliacaoCompleta)
+        }
+
+        localStorage.setItem('avaliacoes', JSON.stringify(avaliacoes))
+        alert('⚠️ Avaliação salva localmente (conexão indisponível)')
+      }
     } else {
       alert(`Critério "${criterio.nome}" enviado com sucesso!`)
     }
