@@ -9,7 +9,11 @@ class AdminDataService {
   static async getPratos() {
     try {
       const response = await ApiService.getPratos()
-      return response.success ? response.data : []
+      console.log('Resposta da API pratos:', response)
+      if (response && response.success && Array.isArray(response.data)) {
+        return response.data
+      }
+      return this.getFallbackPratos()
     } catch (error) {
       console.error('Erro ao buscar pratos:', error)
       return this.getFallbackPratos()
@@ -61,7 +65,11 @@ class AdminDataService {
   static async getJurados() {
     try {
       const response = await ApiService.getJurados()
-      return response.success ? response.data : []
+      console.log('Resposta da API jurados:', response)
+      if (response && response.success && Array.isArray(response.data)) {
+        return response.data
+      }
+      return this.getFallbackJurados()
     } catch (error) {
       console.error('Erro ao buscar jurados:', error)
       return this.getFallbackJurados()
