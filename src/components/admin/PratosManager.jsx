@@ -18,6 +18,7 @@ import {
   Search, 
   Filter,
   Image as ImageIcon,
+  BookOpen,
   Clock,
   Users,
   MapPin,
