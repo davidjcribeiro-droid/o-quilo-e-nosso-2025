@@ -8,6 +8,7 @@ import VotingDataService from '../services/VotingDataService.js'
 
 const SelecaoPratos = ({ dadosJurado, onNext, onBack, onAvaliarPrato }) => {
   const [pratos, setPratos] = useState([])
+  const [totalJurados, setTotalJurados] = useState(0)
   const [pratosOriginal] = useState([
     {
       id: 1,
@@ -71,9 +72,9 @@ const SelecaoPratos = ({ dadosJurado, onNext, onBack, onAvaliarPrato }) => {
     }
   ])
 
-  // Carregar pratos do Supabase via VotingDataService
+  // Carregar pratos e jurados do Supabase via VotingDataService
   useEffect(() => {
-    const carregarPratos = async () => {
+    const carregarDados = async () => {
       try {
         console.log('🍽️ Carregando pratos para votação...')
         const pratosVoting = await VotingDataService.getPratos()
@@ -85,14 +86,27 @@ const SelecaoPratos = ({ dadosJurado, onNext, onBack, onAvaliarPrato }) => {
           console.log('⚠️ Nenhum prato encontrado, usando dados padrão')
           setPratos(pratosOriginal)
         }
+        
+        // Carregar jurados
+        console.log('👥 Carregando jurados...')
+        const juradosVoting = await VotingDataService.getJurados()
+        
+        if (juradosVoting && juradosVoting.length > 0) {
+          console.log('✅ Jurados carregados:', juradosVoting.length)
+          setTotalJurados(juradosVoting.length)
+        } else {
+          console.log('⚠️ Nenhum jurado encontrado')
+          setTotalJurados(0)
+        }
+        
       } catch (error) {
-        console.error('❌ Erro ao carregar pratos:', error)
-        // Fallback para dados originais em caso de erro
+        console.error('❌ Erro ao carregar dados:', error)
         setPratos(pratosOriginal)
+        setTotalJurados(0)
       }
     }
-    
-    carregarPratos()
+
+    carregarDados()
   }, [])
 
   const criterios = [
@@ -156,7 +170,6 @@ const SelecaoPratos = ({ dadosJurado, onNext, onBack, onAvaliarPrato }) => {
   }
 
   const pratosAvaliados = contarPratosAvaliados()
-  const totalJurados = 5 // Número fixo de jurados
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-green-50 to-yellow-50 mobile-safe">

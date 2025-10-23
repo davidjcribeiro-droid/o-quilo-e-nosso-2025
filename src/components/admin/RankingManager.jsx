@@ -45,7 +45,7 @@ const RankingManager = () => {
       setJurados(juradosData)
       
       // Calcular rankings
-      const rankingData = calcularRankings(pratosData, juradosData)
+      const rankingData = await calcularRankings(pratosData, juradosData)
       setRankings(rankingData)
       setLastUpdate(new Date())
       
@@ -75,31 +75,35 @@ const RankingManager = () => {
       let detalhesJurados = []
 
       juradosData.forEach(jurado => {
-        const chaveVotacoes = `votacoes_jurado_${jurado.id}`
-        const votacoesSalvas = localStorage.getItem(chaveVotacoes)
+        // Buscar avaliações deste jurado para este prato no Supabase
+        const avaliacoesJuradoPrato = avaliacoesData.filter(av => 
+          av.jurado_id === jurado.id && av.prato_id === prato.id
+        )
         
-        if (votacoesSalvas) {
-          const votacoes = JSON.parse(votacoesSalvas)
-          const votacaoPrato = votacoes[prato.id]
-          
-          if (votacaoPrato && votacaoPrato.completa) {
+        if (avaliacoesJuradoPrato.length > 0) {
             let pontosJurado = 0
+            let criteriosAvaliados = 0
+            
             criterios.forEach(criterio => {
-              if (votacaoPrato[criterio.id]) {
-                pontosJurado += (votacaoPrato[criterio.id] * criterio.peso)
+              const avaliacao = avaliacoesJuradoPrato.find(av => av.criterio === criterio.id)
+              if (avaliacao && avaliacao.nota > 0) {
+                pontosJurado += (avaliacao.nota * criterio.peso)
+                criteriosAvaliados++
               }
             })
             
-            totalPontos += pontosJurado
-            totalVotacoes++
-            
-            detalhesJurados.push({
-              jurado: jurado.nome,
-              pontos: pontosJurado,
-              percentual: (pontosJurado / (pesoTotal * 10)) * 100
-            })
+            // Só considera se avaliou todos os critérios
+            if (criteriosAvaliados === criterios.length) {
+              totalPontos += pontosJurado
+              totalVotacoes++
+              
+              detalhesJurados.push({
+                jurado: jurado.nome,
+                pontos: pontosJurado,
+                percentual: (pontosJurado / (pesoTotal * 10)) * 100
+              })
+            }
           }
-        }
       })
 
       const mediaFinal = totalVotacoes > 0 ? totalPontos / totalVotacoes : 0
