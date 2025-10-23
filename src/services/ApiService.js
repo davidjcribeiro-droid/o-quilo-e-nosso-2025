@@ -76,6 +76,12 @@ class ApiService {
     })
   }
 
+  static async deleteJurado(id) {
+    return this.request(`/jurados/${id}`, {
+      method: 'DELETE'
+    })
+  }
+
   // ===== AVALIAÇÕES =====
   static async getAvaliacoes() {
     return this.request('/avaliacoes')
@@ -86,6 +92,33 @@ class ApiService {
       method: 'POST',
       body: JSON.stringify(avaliacao)
     })
+  }
+
+  // ===== ESTATÍSTICAS =====
+  static async getEstatisticas() {
+    return this.request('/estatisticas')
+  }
+
+  // ===== RANKING =====
+  static async getRanking() {
+    return this.request('/ranking')
+  }
+
+  // ===== RECEITAS =====
+  static async getReceitas() {
+    return this.request('/receitas')
+  }
+
+  static async createReceita(receita) {
+    return this.request('/receitas', {
+      method: 'POST',
+      body: JSON.stringify(receita)
+    })
+  }
+
+  // ===== HEALTH CHECK =====
+  static async healthCheck() {
+    return this.request('/api/health')
   }
 
   static async getAvaliacoesByPrato(pratoId) {

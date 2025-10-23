@@ -178,9 +178,9 @@ const AdminPanel = () => {
                   <ChefHat className="h-4 w-4" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalPratos || 0}</div>
+                  <div className="text-2xl font-bold">{stats.total_pratos || 0}</div>
                   <p className="text-xs opacity-90">
-                    {stats.pratosComReceita || 0} com receitas
+                    {stats.pratos_com_receita || 0} com receitas
                   </p>
                 </CardContent>
               </Card>
@@ -191,7 +191,7 @@ const AdminPanel = () => {
                   <Users className="h-4 w-4" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalJurados || 0}</div>
+                  <div className="text-2xl font-bold">{stats.jurados_ativos || 0}</div>
                   <p className="text-xs opacity-90">
                     Avaliadores cadastrados
                   </p>
@@ -204,7 +204,7 @@ const AdminPanel = () => {
                   <BookOpen className="h-4 w-4" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalReceitas || 0}</div>
+                  <div className="text-2xl font-bold">{stats.total_receitas || 0}</div>
                   <p className="text-xs opacity-90">
                     Receitas cadastradas
                   </p>
@@ -266,7 +266,7 @@ const AdminPanel = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2 text-sm text-gray-600">
-                  <p><strong>Última atualização:</strong> {stats.ultimaAtualizacao ? new Date(stats.ultimaAtualizacao).toLocaleString('pt-BR') : 'N/A'}</p>
+                  <p><strong>Última atualização:</strong> {stats.ultima_atualizacao ? new Date(stats.ultima_atualizacao).toLocaleString('pt-BR') : 'N/A'}</p>
                   <p><strong>Versão:</strong> 1.0.0</p>
                   <p><strong>Status:</strong> <Badge variant="outline" className="text-green-600 border-green-200">Operacional</Badge></p>
                 </div>

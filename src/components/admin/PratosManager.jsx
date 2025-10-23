@@ -36,6 +36,7 @@ const PratosManager = ({ onDataChange }) => {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const fileInputRef = useRef(null)
+  const receitaInputRef = useRef(null)
 
   const [formData, setFormData] = useState({
     nome: '',
@@ -46,7 +47,8 @@ const PratosManager = ({ onDataChange }) => {
     categoria: '',
     estado: '',
     chef: '',
-    imagem: ''
+    imagem: '',
+    receita: null
   })
 
   const categorias = [
@@ -126,7 +128,8 @@ const PratosManager = ({ onDataChange }) => {
       categoria: '',
       estado: '',
       chef: '',
-      imagem: ''
+      imagem: '',
+      receita: null
     })
     setEditingPrato(null)
     setError('')
@@ -153,6 +156,46 @@ const PratosManager = ({ onDataChange }) => {
       ...prev,
       [field]: value
     }))
+  }
+
+  const handleReceitaUpload = async (event) => {
+    const file = event.target.files[0]
+    if (!file) return
+
+    // Validar tipo de arquivo
+    if (file.type !== 'application/pdf') {
+      setError('Por favor, selecione apenas arquivos PDF')
+      return
+    }
+
+    // Validar tamanho (máximo 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      setError('O arquivo PDF deve ter no máximo 10MB')
+      return
+    }
+
+    try {
+      console.log('📄 Processando receita PDF:', file.name)
+      
+      // Converter para base64 para armazenar
+      const base64 = await adminDataService.imageToBase64(file)
+      
+      setFormData(prev => ({
+        ...prev,
+        receita: {
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          data: base64
+        }
+      }))
+      
+      setError('')
+      console.log('✅ Receita PDF processada com sucesso')
+    } catch (error) {
+      console.error('❌ Erro ao processar receita:', error)
+      setError('Erro ao processar receita PDF')
+    }
   }
 
   const handleImageUpload = async (event) => {
@@ -505,6 +548,49 @@ const PratosManager = ({ onDataChange }) => {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+            </div>
+
+            {/* Upload de Receita */}
+            <div className="space-y-2">
+              <Label htmlFor="receita">Receita (PDF)</Label>
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-gray-400 transition-colors">
+                {formData.receita ? (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <BookOpen className="h-5 w-5 text-red-600" />
+                      <span className="text-sm text-gray-600">{formData.receita.name || 'Receita.pdf'}</span>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setFormData(prev => ({ ...prev, receita: null }))}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div
+                    className="text-center cursor-pointer"
+                    onClick={() => receitaInputRef.current?.click()}
+                  >
+                    <BookOpen className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                    <p className="text-sm text-gray-600">
+                      Clique para fazer upload da receita
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      PDF (máx. 10MB)
+                    </p>
+                  </div>
+                )}
+                <input
+                  ref={receitaInputRef}
+                  type="file"
+                  accept=".pdf"
+                  onChange={handleReceitaUpload}
+                  className="hidden"
+                />
               </div>
             </div>
 
